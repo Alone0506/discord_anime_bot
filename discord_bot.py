@@ -4,6 +4,7 @@ import discord
 client = discord.Client()
 
 # 調用 event 函式庫
+print('abc')
 
 
 @client.event
