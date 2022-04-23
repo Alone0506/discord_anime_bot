@@ -1,51 +1,51 @@
-# 導入 Discord.py
 import discord
-# client 是我們與 Discord 連結的橋樑
-client = discord.Client()
+from discord.ext import commands
+
+from web_spider import Anime
+# import web_spider
+
+bot = commands.Bot(command_prefix='$', help_command=None)
 
 # 調用 event 函式庫
 
 
-@client.event
+@bot.event
 # 當機器人完成啟動時
 async def on_ready():
-    print(f'目前登入身份：{client.user}')
+    print(f'目前登入身份：{bot.user}')
     game = discord.Game('努力學習py中')
     # discord.Status.<狀態>，可以是online,offline,idle,dnd,invisible
-    await client.change_presence(status=discord.Status.online, activity=game)
-
-# 調用 event 函式庫
+    await bot.change_presence(status=discord.Status.online, activity=game)
 
 
-@client.event
-# 當有訊息時
-async def on_message(message):
-    # 排除自己的訊息，避免陷入無限循環
-    if message.author == client.user:
+@bot.command()
+async def new(ctx):
+    info = Anime().anime_info()
+    if isinstance(info, int):
+        await ctx.send(info)
         return
-    # 如果我們說了「嗨」，機器人就會跟我們說「你好呀」
-    if message.content == '嗨':
-        await message.channel.send('你好呀')
+    else:
+        for i in range(len(info[0])):
+            embed = discord.Embed(
+                title="動畫名稱", description=info[0][i], color=0xeee657)
+            embed.add_field(name="觀看次數", value=info[1][i], inline=True)
+            embed.add_field(name="最新集數", value=info[2][i], inline=True)
+            embed.add_field(name="動畫網址", value=info[3][i], inline=False)
+            embed.set_thumbnail(url=info[4][i])
+            embed.set_image(url=info[4][i])
+            await ctx.send(embed=embed)
+        return
 
-    if message.content.startswith('說'):
-        # 分割訊息成兩份
-        tmp = message.content.split(" ", 1)
-        # 如果分割後串列長度只有1
-        if len(tmp) == 1:
-            await message.channel.send("你要我說什麼啦？")
-        else:
-            await message.channel.send(tmp[1:])
+bot.remove_command('help')
 
-    if message.content.startswith('更改狀態'):
-        # 切兩刀訊息
-        tmp = message.content.split(" ", 2)
-        # 如果分割後串列長度只有1
-        if len(tmp) == 1:
-            await message.channel.send("你要改成什麼啦？")
-        else:
-            game = discord.Game(tmp[1])
-            # discord.Status.<狀態>，可以是online,offline,idle,dnd,invisible
-            await client.change_presence(status=discord.Status.online, activity=game)
+
+@bot.command()
+async def help(ctx):
+    embed = discord.Embed(title="指令列表", description="目前的指令如下", color=0xc54343)
+    embed.add_field(name="$help", value="列出所有指令", inline=False)
+    embed.add_field(name="$new", value="列出所有本季新番", inline=False)
+
+    await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-client.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.Y3hJZwXKm0R8b-gLZJFE-HWPGiE')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.yDok_AqzEQONnG0AsXSHEOXln24')
