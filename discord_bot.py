@@ -20,9 +20,9 @@ async def on_ready():
 
 @bot.command()
 async def new(ctx):
-    info = Anime().anime_info()
+    info = Anime().newanime_info()
     if isinstance(info, int):
-        await ctx.send(info)
+        await ctx.send("錯誤代碼 : ", info)
         return
     else:
         for i in range(len(info[0])):
@@ -30,11 +30,23 @@ async def new(ctx):
                 title="動畫名稱", description=info[0][i], color=0xeee657)
             embed.add_field(name="觀看次數", value=info[1][i], inline=True)
             embed.add_field(name="最新集數", value=info[2][i], inline=True)
-            embed.add_field(name="動畫網址", value=info[3][i], inline=False)
-            embed.set_thumbnail(url=info[4][i])
-            embed.set_image(url=info[4][i])
+            embed.add_field(name="最新一集更新時間", value=info[3][i], inline=False)
+            embed.add_field(name="動畫網址", value=info[4][i], inline=False)
+            embed.set_thumbnail(url=info[5][i])
+            embed.set_image(url=info[5][i])
             await ctx.send(embed=embed)
         return
+
+
+@bot.command()
+async def new(ctx):
+    info = Anime().newanime_info()
+    if isinstance(info, int):
+        await ctx.send("錯誤代碼 : ", info)
+        return
+    else:
+        pass
+
 
 bot.remove_command('help')
 
@@ -48,4 +60,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.yDok_AqzEQONnG0AsXSHEOXln24')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.bibl9p9ATFlFqaPLC02cTfaiUIY')
