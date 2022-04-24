@@ -55,12 +55,13 @@ def newanime_info():
 
 def renew():
     if r.status_code == 200:
-        program_list = soup.select('.programlist-block > .day-list')
-        print(program_list)
-        # for anime_detail in program_list:
-        #     anime_names = anime_detail.select(
-        #         '.text-anime-detail > .text-anime-name > p')
-        #     print(anime_names)
+        program_list = soup.select('.day-list')
+        for anime_detail in program_list:
+            anime_name = anime_detail.select_one('text-anime-name').string()
+            anime_number = anime_detail.select_one('p.text-anime-number')
+            print(anime_name)
+            print(anime_number)
+            print("================================")
 
 
 # newanime_info()
