@@ -1,10 +1,11 @@
 import discord
-from discord_components import DiscordComponents, ComponentsBot, Button, SelectOption, Select
+from discord_components import DiscordComponents, ComponentsBot, Button
 from discord.ext import commands
 from web_spider import Anime
 # import web_spider
 
 bot = commands.Bot(command_prefix='$', help_command=None)
+DiscordComponents(bot)
 # disord emoji樣式用的跟Twitter一樣
 emoji = '\U0001F493'
 
@@ -16,6 +17,16 @@ async def on_ready():
     game = discord.Game('蘿莉')
     # discord.Status.<狀態>，可以是online,offline,idle,dnd,invisible
     await bot.change_presence(status=discord.Status.online, activity=game)
+
+
+@bot.command()
+async def hello(ctx):
+    await ctx.send("hello", components=[Button(label="Hi",
+                                               style="3",
+                                               emoji="🥴",
+                                               custom_id="follow_btn")])
+    interaction = await bot.wait_for("button_click", check=lambda i: i.custom_id == "follow_btn")
+    await interaction.send(content="已追蹤此動漫!", ephemeral=False)
 
 
 @bot.command()
@@ -35,7 +46,13 @@ async def new(ctx):
             embed.set_thumbnail(url=info[5][i])
             embed.set_image(url=info[5][i])
             await ctx.send(embed=embed)
-        return
+            # await ctx.send(embed=embed, components=[Button(label="追隨",
+            #                                                style="3",
+            #                                                emoji=emoji,
+            #                                                custom_id="follow_btn")])
+
+            # interaction = await bot.wait_for("button_click", check=lambda i: i.custom_id == "follow_btn")
+            # await interaction.send(content="已追蹤此動漫!", ephemeral=False)
 
 
 @bot.command()
@@ -73,4 +90,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.8ir86LZTdRUHHQ-C3Ti99rAjypI')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.DUULrmg58JlvEbK5yHryYTYttu8')
