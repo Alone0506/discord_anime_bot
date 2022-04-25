@@ -21,17 +21,32 @@ async def on_ready():
 
 @bot.command()
 async def hello(ctx):
-    await ctx.send("hello", components=[Button(label="Hi",
-                                               style="3",
-                                               emoji="🥴",
-                                               custom_id="follow_btn")])
-    interaction = await bot.wait_for("button_click", check=lambda i: i.custom_id == "follow_btn")
-    await interaction.send(content="已追蹤此動漫!", ephemeral=False)
+    count = 0
+    for i in range(5):
+        await ctx.send("hello", components=[Button(label="追隨",
+                                                   style="1",
+                                                   emoji=emoji,
+                                                   custom_id=f"follow_btn{count}")])
+        interaction = await bot.send("button_click", check=lambda i: i.custom_id == f"follow_btn{count}")
+        await interaction.send(content="已追蹤此動漫!", ephemeral=False)
+        count += 1
+
+
+@bot.command()
+async def button(ctx):
+    for i in range(5):
+        await ctx.send("Buttons!", components=[Button(label="Button", custom_id=f"button{i}")])
+
+
+@bot.event
+async def on_button_click(interaction):
+    await interaction.respond(content=f"Button Clicked")
 
 
 @bot.command()
 async def new(ctx):
     info = Anime().newanime_info()
+    count = 0
     if isinstance(info, int):
         await ctx.send("錯誤代碼 : ", info)
         return
@@ -46,13 +61,14 @@ async def new(ctx):
             embed.set_thumbnail(url=info[5][i])
             embed.set_image(url=info[5][i])
             await ctx.send(embed=embed)
-            # await ctx.send(embed=embed, components=[Button(label="追隨",
-            #                                                style="3",
-            #                                                emoji=emoji,
-            #                                                custom_id="follow_btn")])
+            await ctx.send(embed=embed, components=[Button(label="追隨",
+                                                           style="1",
+                                                           emoji=emoji,
+                                                           custom_id=f"follow_btn{count}")])
 
-            # interaction = await bot.wait_for("button_click", check=lambda i: i.custom_id == "follow_btn")
-            # await interaction.send(content="已追蹤此動漫!", ephemeral=False)
+            interaction = await bot.send("button_click", check=lambda i: i.custom_id == f"follow_btn{count}")
+            await interaction.send(content="已追蹤此動漫!", ephemeral=False)
+            count += 1
 
 
 @bot.command()
@@ -90,4 +106,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.DUULrmg58JlvEbK5yHryYTYttu8')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.4vPzlb07IK_HDWJ20UkyGXT6w54')

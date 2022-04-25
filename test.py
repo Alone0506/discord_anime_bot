@@ -1,29 +1,63 @@
 import discord
+
 from discord.ext import commands
-import asyncio
-TOKEN = '---'
-bot = commands.Bot(command_prefix='!!')
-reactions = [':white_check_mark:', ':stop_sign:', ':no_entry_sign:']
 
 
-@bot.event
-async def on_ready():
-    print('Bot is ready.')
+# Define a simple View that persists between bot restarts
+# In order for a view to persist between restarts it needs to meet the following conditions:
+# 1) The timeout of the View has to be set to None
+# 2) Every item in the View has to have a custom_id set
+# It is recommended that the custom_id be sufficiently unique to
+# prevent conflicts with other buttons the bot sends.
+# For this example the custom_id is prefixed with the name of the bot.
+# Note that custom_ids can only be up to 100 characters long.
+class PersistentView(discord.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.button(label='Green', style=discord.ButtonStyle.green, custom_id='persistent_view:green')
+    async def green(self, button: discord.Button, interaction: discord.Interaction):
+        await interaction.response.send_message('This is green.', ephemeral=True)
+
+    @discord.button(label='Red', style=discord.ButtonStyle.red, custom_id='persistent_view:red')
+    async def red(self, button: discord.Button, interaction: discord.Interaction):
+        await interaction.response.send_message('This is red.', ephemeral=True)
+
+    @discord.button(label='Grey', style=discord.ButtonStyle.grey, custom_id='persistent_view:grey')
+    async def grey(self, button: discord.Button, interaction: discord.Interaction):
+        await interaction.response.send_message('This is grey.', ephemeral=True)
+
+
+class Bot(commands.Bot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.persistent_views_added = False
+
+    async def on_ready(self):
+        if not self.persistent_views_added:
+            # Register the persistent view for listening here.
+            # Note that this does not send the view to any message.
+            # To do that, you need to send a message with the View as shown below.
+            # If you have the message_id you can also pass it as a keyword argument, but for this example
+            # we don't have one.
+            self.add_view(PersistentView())
+            self.persistent_views_added = True
+
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+
+
+bot = Bot(command_prefix='$')
 
 
 @bot.command()
-async def bug(ctx, desc=None, rep=None):
-    user = ctx.author
-    await ctx.author.send('```Please explain the bug```')
-    responseDesc = await bot.wait_for('message', check=lambda message: message.author == ctx.author, timeout=300)
-    description = responseDesc.content
-    await ctx.author.send('````Please provide pictures/videos of this bug```')
-    responseRep = await bot.wait_for('message', check=lambda message: message.author == ctx.author, timeout=300)
-    replicate = responseRep.content
-    embed = discord.Embed(title='Bug Report', color=0x00ff00)
-    embed.add_field(name='Description', value=description, inline=False)
-    embed.add_field(name='Replicate', value=replicate, inline=True)
-    embed.add_field(name='Reported By', value=user, inline=True)
-    adminBug = bot.get_channel(733721953134837861)
-    # Add 3 reaction (different emojis) here bot.run(TOKEN)
-    await adminBug.send(embed=embed)
+@commands.is_owner()
+async def prepare(ctx):
+    """Starts a persistent view."""
+    # In order for a persistent view to be listened to, it needs to be sent to an actual message.
+    # Call this method once just to store it somewhere.
+    # In a more complicated program you might fetch the message_id from a database for use later.
+    # However this is outside of the scope of this simple example.
+    await ctx.send("What's your favourite colour?", view=PersistentView())
+
+
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.d0C_CtO06RIbofTOxePH0xAbMQ8')
