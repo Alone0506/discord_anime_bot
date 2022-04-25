@@ -54,15 +54,44 @@ def newanime_info():
 
 
 def renew():
+    return_dict = {}
     if r.status_code == 200:
-        program_list = soup.select('.day-list')
-        for anime_detail in program_list:
-            anime_name = anime_detail.select_one('text-anime-name').string()
-            anime_number = anime_detail.select_one('p.text-anime-number')
-            print(anime_name)
-            print(anime_number)
-            print("================================")
+        day_list = soup.select('.day-list')
+        for anime_block in day_list:
+            tmp_dict = {}
+            anime_info_list = []
+
+            day_title = anime_block.select_one('h3').get_text().strip()
+
+            if anime_block.select('.text-anime-info') != []:
+                for i in anime_block.select('.text-anime-info'):
+
+                    anime_time = i.select_one('.text-anime-time')
+                    anime_time = anime_time.get_text().strip()
+
+                    anime_name = i.select_one('.text-anime-name')
+                    anime_name = anime_name.get_text().strip()
+
+                    anime_episode = i.select_one('.text-anime-number')
+                    anime_episode = anime_episode.get_text().strip()
+
+                    anime_info_list.append(
+                        [anime_time, anime_name, anime_episode])
+
+            else:
+                text = anime_block.select_one('.pic-no-content')
+                text = text.get_text().strip()
+
+                image = anime_block.select_one('.pic-no-content').find('img')
+                image = image['src']
+
+                anime_info_list.append([text, image])
+
+            tmp_dict[day_title] = anime_info_list
+
+            return_dict.update(tmp_dict)
+
+    return return_dict
 
 
-# newanime_info()
-renew()
+print(renew())

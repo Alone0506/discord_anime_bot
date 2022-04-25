@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'
 }
-print("a")
 
 
 class Anime:
@@ -72,8 +71,47 @@ class Anime:
         else:
             return self.r.status_code
 
-    def newanime_info(self):
-
+    def renew(self):
+        return_dict = {}
         if self.r.status_code == 200:
-            for day_list in self.program_list:
-                print(day_list)
+            day_list = self.soup.select('.day-list')
+            for anime_block in day_list:
+                tmp_dict = {}
+                anime_info_list = []
+
+                day_title = anime_block.select_one('h3').get_text().strip()
+
+                if anime_block.select('.text-anime-info') != []:
+                    for i in anime_block.select('.text-anime-info'):
+
+                        anime_name = i.select_one('.text-anime-name')
+                        anime_name = anime_name.get_text().strip()
+
+                        anime_time = i.select_one('.text-anime-time')
+                        anime_time = anime_time.get_text().strip()
+
+                        anime_episode = i.select_one('.text-anime-number')
+                        anime_episode = anime_episode.get_text().strip()
+
+                        anime_info_list.append(
+                            [anime_name, anime_time, anime_episode])
+
+                else:
+                    text = anime_block.select_one('.pic-no-content')
+                    text = text.get_text().strip()
+
+                    image = anime_block.select_one(
+                        '.pic-no-content').find('img')
+                    image = image['src']
+
+                    anime_info_list.append([text, image])
+
+                tmp_dict[day_title] = anime_info_list
+
+                return_dict.update(tmp_dict)
+
+        return return_dict
+
+
+# a = Anime().renew()
+# print(a)
