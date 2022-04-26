@@ -23,36 +23,28 @@ class Anime:
 
     def newanime_info(self):
 
-        anime_name_list = []
-        anime_watch_number_list = []
-        anime_episode_list = []
-        anime_href_list = []
-        anime_image_list = []
-        anime_update_time_list = []
-
+        return_dict = {}
         if self.r.status_code == 200:
             for anime_item in self.anime_items:
+                tmp_dict = {}
                 # 動畫名稱
                 name = anime_item.select_one('.anime-name > p').text.strip()
-                anime_name_list.append(name)
                 # 觀看次數
                 watch_number = anime_item.select_one(
                     '.anime-watch-number > p').text.strip()
-                anime_watch_number_list.append(watch_number)
                 # 最新集數
                 if anime_item.select_one('.anime-episode').text.strip():
                     episode = anime_item.select_one(
                         '.anime-episode').text.strip()
-                    anime_episode_list.append(episode)
                 else:
-                    anime_episode_list.append("此為OVA或電影")
+                    episode = "此為OVA或電影"
                 # 動畫網址
                 href = anime_item.select_one('a.anime-card-block').get('href')
-                anime_href_list.append('https://ani.gamer.com.tw/' + href)
+                href = 'https://ani.gamer.com.tw/' + href
                 # 動畫縮圖
                 picture = anime_item.select_one(
                     '.anime-blocker').findAll('img')[0]
-                anime_image_list.append(picture['src'])
+                picture = picture['src']
                 # 更新時間
                 update_hour = anime_item.find_all(
                     'span', class_='anime-hours')[0]
@@ -61,12 +53,17 @@ class Anime:
                     'span', class_='anime-date-info anime-date-info-block-arrow')[0]
                 update_day = list(update_day)
                 if update_day[-1].strip() == "其他":
-                    anime_update_time_list.append("僅有一集")
+                    update_time = "其他"
                 else:
-                    anime_update_time_list.append(
-                        update_day[-1].strip() + update_hour[0].strip())
+                    update_time = update_day[-1].strip() + \
+                        update_hour[0].strip()
 
-            return [anime_name_list, anime_watch_number_list, anime_episode_list, anime_update_time_list, anime_href_list, anime_image_list]
+                tmp_dict[name] = [watch_number,
+                                  episode, update_time, href, picture]
+
+                return_dict.update(tmp_dict)
+
+            return return_dict
 
         else:
             return self.r.status_code
@@ -113,5 +110,5 @@ class Anime:
         return return_dict
 
 
-# a = Anime().renew()
+# a = Anime().newanime_info()
 # print(a)

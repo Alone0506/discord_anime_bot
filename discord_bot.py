@@ -1,13 +1,16 @@
 import discord
 from discord_components import DiscordComponents, ComponentsBot, Button
 from discord.ext import commands
+
 from web_spider import Anime
+from handle_follow_info import Handle_follow_info
 # import web_spider
 
 bot = commands.Bot(command_prefix='$', help_command=None)
 DiscordComponents(bot)
 # disord emoji樣式用的跟Twitter一樣
 emoji = '\U0001F493'
+info_dict = {}
 
 
 @bot.event
@@ -20,55 +23,41 @@ async def on_ready():
 
 
 @bot.command()
-async def hello(ctx):
-    count = 0
-    for i in range(5):
-        await ctx.send("hello", components=[Button(label="追隨",
-                                                   style="1",
-                                                   emoji=emoji,
-                                                   custom_id=f"follow_btn{count}")])
-        interaction = await bot.send("button_click", check=lambda i: i.custom_id == f"follow_btn{count}")
-        await interaction.send(content="已追蹤此動漫!", ephemeral=False)
-        count += 1
-
-
-@bot.command()
-async def button(ctx):
-    for i in range(5):
-        await ctx.send("Buttons!", components=[Button(label="Button", custom_id=f"button{i}")])
+async def new(ctx):
+    global info_dict
+    info_dict = Anime().newanime_info()
+    if isinstance(info_dict, int):
+        await ctx.send("錯誤代碼 : ", info)
+        return
+    else:
+        for anime_name, info in info_dict.items():
+            embed = discord.Embed(
+                title="動畫名稱", description=anime_name, color=0xeee657)
+            embed.add_field(name="觀看次數", value=info[0], inline=True)
+            embed.add_field(name="最新集數", value=info[1], inline=True)
+            embed.add_field(name="最新一集更新時間", value=info[2], inline=False)
+            embed.add_field(name="動畫網址", value=info[3], inline=False)
+            embed.set_thumbnail(url=info[4])
+            embed.set_image(url=info[4])
+            if info[1] == "此為OVA或電影":
+                await ctx.send(embed=embed)
+            else:
+                await ctx.send(embed=embed, components=[Button(label="追隨",
+                                                               style="1",
+                                                               emoji=emoji,
+                                                               custom_id=f"{info[1]} {anime_name}")])
+            # custom_id 最多100個字元"追 隨" = 3個字元
 
 
 @bot.event
 async def on_button_click(interaction):
-    await interaction.respond(content=f"Button Clicked")
+    user_name = interaction.user
+    episode = interaction.custom_id.split(" ", 1)[0]
+    anime_name = interaction.custom_id.split(" ", 1)[1]
+    # add_follow = (Alone#7831, "第二集", "輝夜大小姐")
+    add_follow = Handle_follow_info().check_follow(user_name, episode, anime_name)
 
-
-@bot.command()
-async def new(ctx):
-    info = Anime().newanime_info()
-    count = 0
-    if isinstance(info, int):
-        await ctx.send("錯誤代碼 : ", info)
-        return
-    else:
-        for i in range(len(info[0])):
-            embed = discord.Embed(
-                title="動畫名稱", description=info[0][i], color=0xeee657)
-            embed.add_field(name="觀看次數", value=info[1][i], inline=True)
-            embed.add_field(name="最新集數", value=info[2][i], inline=True)
-            embed.add_field(name="最新一集更新時間", value=info[3][i], inline=False)
-            embed.add_field(name="動畫網址", value=info[4][i], inline=False)
-            embed.set_thumbnail(url=info[5][i])
-            embed.set_image(url=info[5][i])
-            await ctx.send(embed=embed)
-            await ctx.send(embed=embed, components=[Button(label="追隨",
-                                                           style="1",
-                                                           emoji=emoji,
-                                                           custom_id=f"follow_btn{count}")])
-
-            interaction = await bot.send("button_click", check=lambda i: i.custom_id == f"follow_btn{count}")
-            await interaction.send(content="已追蹤此動漫!", ephemeral=False)
-            count += 1
+    await interaction.respond(content=f"{user_name}\t已追隨\t{anime_name}", ephemeral=False)
 
 
 @bot.command()
@@ -81,9 +70,6 @@ async def renew(ctx):
                 title="預計更新時間", description=infos[0][0], color=0xeee657)
             embed.set_thumbnail(url=infos[0][1])
             await ctx.send(day, embed=embed)
-            # add_emoji = await ctx.send(day, embed=embed)
-            # await add_emoji.add_reaction(emoji)
-            # return
 
         else:
             for info in infos:
@@ -106,4 +92,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.4vPzlb07IK_HDWJ20UkyGXT6w54')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.yrMH45h5VZ858BUVO2SjmyiVVIQ')
