@@ -6,6 +6,7 @@ from web_spider import Anime
 
 bot = commands.Bot(command_prefix='$', help_command=None)
 DiscordComponents(bot)
+token = 'OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.QGJVy25aqas2ODQZ6ePAaGRUUn8'
 # disord emoji樣式用的跟Twitter一樣
 emoji = '\U0001F493'
 
@@ -20,14 +21,26 @@ async def on_ready():
 
 
 @bot.command()
+async def test(ctx):
+    for i in range(5):
+        ticket = await ctx.send("_ _", components=[Button(label="Test Button",
+                                                          style='1',
+                                                          custom_id="test")])
+        interaction = await bot.wait_for("button_click", check=lambda i: i.custom_id == "test")
+        await interaction.send(content='Test push')
+
+
+@bot.command()
 async def button(ctx):
-    await ctx.send("Buttons!", components=[Button(label="Button1", custom_id="button11")])
-    await ctx.send("Buttons!", components=[Button(label="Button2", custom_id="button22")])
+    for i in range(5):
+        await ctx.send("Buttons!", components=[Button(label="Test", custom_id=f"button{i}")])
+        interaction = await bot.wait_for("button_click", check=lambda i: i.custom_id == "test")
+        await interaction.send(content='Button Test')
 
 
-@bot.event
-async def on_button_click(interaction):
-    await interaction.respond(content="Button Clicked")
+# @bot.event
+# async def on_button_click(interaction):
+#     await interaction.respond(content=f"Button Clicked")
 
 
 @bot.command()
@@ -48,14 +61,14 @@ async def new(ctx):
             embed.set_thumbnail(url=info[5][i])
             embed.set_image(url=info[5][i])
             await ctx.send(embed=embed)
-            await ctx.send(embed=embed, components=[Button(label="追隨",
-                                                           style="1",
-                                                           emoji=emoji,
-                                                           custom_id=f"follow_btn{count}")])
+            # await ctx.send(embed=embed, components=[Button(label="追隨",
+            #                                                style="1",
+            #                                                emoji=emoji,
+            #                                                custom_id=f"follow_btn{count}")])
 
-            interaction = await bot.send("button_click", check=lambda i: i.custom_id == f"follow_btn{count}")
-            await interaction.send(content="已追蹤此動漫!", ephemeral=False)
-            count += 1
+            # interaction = await bot.wait_for("button_click", check=lambda i: i.custom_id == f"follow_btn{count}")
+            # await interaction.send(content="已追蹤此動漫!", ephemeral=False)
+            # count += 1
 
 
 @bot.command()
@@ -68,6 +81,9 @@ async def renew(ctx):
                 title="預計更新時間", description=infos[0][0], color=0xeee657)
             embed.set_thumbnail(url=infos[0][1])
             await ctx.send(day, embed=embed)
+            # add_emoji = await ctx.send(day, embed=embed)
+            # await add_emoji.add_reaction(emoji)
+            # return
 
         else:
             for info in infos:
@@ -90,4 +106,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.M0E-1IO9IfjQjCsdKgBNU_0qKm8')
+bot.run(token)
