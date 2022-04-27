@@ -7,7 +7,6 @@ class Handle_follow_info():
 
     def txt_to_dict(self):
         with open('follow_info.txt', 'r', encoding="utf-8") as f:
-            f.seek(0)
             infos = f.readlines()
 
             for info in infos:
@@ -21,18 +20,17 @@ class Handle_follow_info():
     def dict_to_txt(self, user_name, episode, anime_name):
         with open('follow_info.txt', 'a', encoding="utf-8") as f:
             f.write(f"{user_name} {episode} {anime_name}\n")
+        f.close()
 
     def isnew_user(self, user_name):
         self.txt_to_dict()
-        if user_name not in self.info_dict:
-            print(self.info_dict)
+        if str(user_name).strip() not in self.info_dict:
             return True
-        print(self.info_dict)
         return False
 
     def isodd_user_follow(self, user_name, episode, anime_name):
+        user_name = str(user_name).strip()
         if [episode, anime_name] in self.info_dict[user_name]:
-            print("true")
             return True
         return False
 

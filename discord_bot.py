@@ -54,19 +54,17 @@ async def on_button_click(interaction):
     user_name = interaction.user
     episode = interaction.custom_id.split(" ", 1)[0]
     anime_name = interaction.custom_id.split(" ", 1)[1]
-    # add_follow = (Alone#7831, "第二集", "輝夜大小姐")
+
     add_follow = Handle_follow_info()
     if add_follow.isnew_user(user_name):
         add_follow.add_follow_info_to_txt(user_name, episode, anime_name)
         await interaction.respond(content=f"{user_name}\t已追隨\t{anime_name}", ephemeral=False)
     else:
         if add_follow.isodd_user_follow(user_name, episode, anime_name):
-            await interaction.respond(content=f"{user_name}\t已追隨此動漫", ephemeral=False)
+            await interaction.respond(content=f"{user_name}\t此動漫已在追隨列表中", ephemeral=False)
         else:
             add_follow.add_follow_info_to_txt(user_name, episode, anime_name)
             await interaction.respond(content=f"{user_name}\t已追隨\t{anime_name}", ephemeral=False)
-    # print([episode, anime_name] in add_follow.info_dict[user_name])
-    # print(add_follow.info_dict)
 
 
 @bot.command()
