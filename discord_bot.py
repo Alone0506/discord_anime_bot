@@ -1,10 +1,9 @@
 import discord
 from discord_components import DiscordComponents, ComponentsBot, Button
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from web_spider import Anime
 from handle_follow_info import Handle_follow_info
-# import web_spider
 
 bot = commands.Bot(command_prefix='$', help_command=None)
 DiscordComponents(bot)
@@ -20,6 +19,19 @@ async def on_ready():
     game = discord.Game('蘿莉')
     # discord.Status.<狀態>，可以是online,offline,idle,dnd,invisible
     await bot.change_presence(status=discord.Status.online, activity=game)
+##
+    check_update.start()
+
+
+# def cog_unload():
+#     check_update.cancel()
+
+
+@tasks.loop(seconds=5.0, count=2)
+async def check_update():
+    channel = bot.get_channel(966204182245806090)
+    await channel.send("hi hi")
+##
 
 
 @bot.command()
@@ -99,4 +111,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.Xq6yGXYPw_ND52wAFwHM1B9pLz8')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.IvPogl8YXLhfkn60ZZBo-nahvnM')
