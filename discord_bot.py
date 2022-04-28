@@ -1,6 +1,13 @@
 # ############
 # discord.__version__ = 1.7.3
 # python.__version__ = 3.10.4 64-bit
+#
+# abbreviation definition:
+# sub = subscribe
+# unsub = unsubscribe
+# info = information
+# dict = dictionary
+#
 # ############
 
 import discord
@@ -9,12 +16,13 @@ from discord_components import DiscordComponents, ComponentsBot, Button
 from discord.ext import commands, tasks
 
 from web_spider import Anime
-from handle_follow_info import Handle_follow_info
+from handle_sub_info import Handle_sub_info
 
 bot = commands.Bot(command_prefix='$', help_command=None)
 DiscordComponents(bot)
 # disord emoji樣式用的跟Twitter一樣
-emoji = '\U0001F493'
+sub_emoji = '\U0001F493'
+unsub_emoji = '\U0001F494'
 
 
 # logger = logging.getLogger('discord')
@@ -47,12 +55,12 @@ async def on_guild_join(guild):
 async def check_update():
 
     new_anime_dict = Anime().newanime_info()
-    user_follow = Handle_follow_info()
-    user_follow.txt_to_dict()
-    user_follow_dict = user_follow.info_dict
+    user_sub = Handle_sub_info()
+    user_sub.txt_to_dict()
+    user_sub_dict = user_sub.info_dict
 
-    for user_id in user_follow_dict:
-        for episode, anime_name in user_follow_dict[user_id]:
+    for user_id in user_sub_dict:
+        for episode, anime_name in user_sub_dict[user_id]:
             if anime_name in new_anime_dict:
                 if episode not in new_anime_dict[anime_name]:
                     embed = discord.Embed(
@@ -66,40 +74,46 @@ async def check_update():
                     embed.set_thumbnail(url=new_anime_dict[anime_name][4])
                     embed.set_image(url=new_anime_dict[anime_name][4])
 
-                    idx = user_follow_dict[user_id].index(
+                    idx = user_sub_dict[user_id].index(
                         [episode, anime_name])
-                    user_follow_dict[user_id][idx][0] = new_anime_dict[anime_name][1]
+                    user_sub_dict[user_id][idx][0] = new_anime_dict[anime_name][1]
                     try:
+                        #如果user在訂閱後離開伺服器, 抓使用者時會產生Exception
                         userr = await bot.fetch_user(user_id)
                         await userr.send("追隨中的動畫已更新", embed=embed)
                     except Exception:
                         pass
 
             else:
-                user_follow_dict[user_id].remove([episode, anime_name])
+                user_sub_dict[user_id].remove([episode, anime_name])
                 try:
                     userr = await bot.fetch_user(user_id)
                     await userr.send(f"{anime_name} 因為已完結或移出動畫瘋的的新番列表, 所以已經自動取消追隨.")
                 except Exception:
                     pass
 
-    user_follow.dict_to_txt(user_follow_dict)
+    user_sub.dict_to_txt(user_sub_dict)
 
 
 @bot.command()
-async def follow_list(ctx):
-    user_follow = Handle_follow_info()
-    user_follow.txt_to_dict()
-    user_follow_dict = user_follow.info_dict
-    for user_id in user_follow_dict:
+async def sublist(ctx):
+    user_sub = Handle_sub_info()
+    user_sub.txt_to_dict()
+    user_sub_dict = user_sub.info_dict
+
+    if user_sub_dict == {}:
+        response = f"{ctx.author.mention} 目前無訂閱"
+        await ctx.send(response)
+
+    for user_id in user_sub_dict:
         try:
             user_name = await bot.fetch_user(user_id)
         except Exception:
             pass
-        for episode, anime_name in user_follow_dict[user_id]:
+        for episode, anime_name in user_sub_dict[user_id]:
             if user_name == ctx.author:
-                response = f"{ctx.author.mention} 已追隨 {anime_name}"
-                await ctx.channel.send(response)
+                response = f"{ctx.author.mention} 已訂閱 {anime_name}"
+                await ctx.send(response)
 
 
 @bot.command()
@@ -121,8 +135,8 @@ async def new(ctx):
             if info[1] == "此為OVA或電影":
                 await ctx.send(embed=embed)
             else:
-                await ctx.send(embed=embed, components=[Button(label="訂閱", style="3", emoji=emoji, custom_id=f"subscribe {info[1]} {anime_name}"),
-                                                        Button(label="取消訂閱", style="4", emoji=emoji, custom_id=f"unsubscribe {info[1]} {anime_name}")])
+                await ctx.send(embed=embed, components=[Button(label="訂閱", style="3", emoji=sub_emoji, custom_id=f"subscribe {info[1]} {anime_name}"),
+                                                        Button(label="取消訂閱", style="4", emoji=unsub_emoji, custom_id=f"unsubscribe {info[1]} {anime_name}")])
 
             # custom_id 最多100個字元"追 隨" = 3個字元
 
@@ -136,28 +150,25 @@ async def on_button_click(interaction):
     anime_name = interaction.custom_id.split(" ", 2)[2]
 
     if sub_or_unsub == "subscribe":
-        user_subscribe = Handle_follow_info()
-        if user_subscribe.isnew_user(user_id):
-            user_subscribe.info_dict[user_id].append([episode, anime_name])
-            user_subscribe.dict_to_txt(user_subscribe.info_dict)
-            await interaction.respond(content=f"{user_name}\t已訂閱\t{anime_name}", ephemeral=False)
-        else:
-            if user_subscribe.isodd_user_follow(user_id, episode, anime_name):
-                await interaction.respond(content=f"{user_name}\t此動漫已在追隨列表中", ephemeral=False)
-            else:
-                user_subscribe.info_dict[user_id].append([episode, anime_name])
-                user_subscribe.dict_to_txt(user_subscribe.info_dict)
-                await interaction.respond(content=f"{user_name}\t已訂閱\t{anime_name}", ephemeral=False)
-    else:
-        user_unsubscribe = Handle_follow_info()
-        user_unsubscribe.txt_to_dict()
-        user_unsubscribe_dict = user_unsubscribe.info_dict
+        user_sub = Handle_sub_info()
+        if user_sub.issub(user_id, episode, anime_name):
+            await interaction.respond(content=f"{user_name}\t此動漫已在訂閱列表中", ephemeral=False)
 
-        if user_id not in user_unsubscribe_dict or [episode, anime_name] not in user_unsubscribe_dict[user_id]:
-            await interaction.respond(content=f"{user_name}\t原本就沒訂閱", ephemeral=False)
         else:
-            user_unsubscribe_dict[user_id].remove([episode, anime_name])
-            user_unsubscribe.dict_to_txt(user_unsubscribe_dict)
+            user_sub.info_dict[user_id].append([episode, anime_name])
+            user_sub.dict_to_txt(user_sub.info_dict)
+            await interaction.respond(content=f"{user_name}\t已訂閱\t{anime_name}", ephemeral=False)
+    else:  # sub_or_unsub == "unsubscribe"
+        user_unsub = Handle_sub_info()
+        user_unsub.txt_to_dict()
+        user_unsub_dict = user_unsub.info_dict
+
+        if user_id not in user_unsub_dict or [episode, anime_name] not in user_unsub_dict[user_id]:
+            await interaction.respond(content=f"{user_name}\t原本就沒訂閱", ephemeral=False)
+
+        else:
+            user_unsub_dict[user_id].remove([episode, anime_name])
+            user_unsub.dict_to_txt(user_unsub_dict)
             await interaction.respond(content=f"{user_name}\t已取消訂閱 {anime_name}", ephemeral=False)
 
 
@@ -190,7 +201,8 @@ async def help(ctx):
     embed.add_field(name="$help", value="列出所有指令", inline=False)
     embed.add_field(name="$new", value="列出已更新的本季新番", inline=False)
     embed.add_field(name="$renew", value="列出這周預訂更新的新番列表", inline=False)
+    embed.add_field(name="$sublist", value="列出你目前的訂閱新番", inline=False)
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.f7olQe8czz1orvxB1_tViKrWksU')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.0U9B5dMQf6NJJvqS0LotQ5Im0WQ')
