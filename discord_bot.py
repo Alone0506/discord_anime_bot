@@ -113,7 +113,10 @@ async def sublist(ctx):
         for episode, anime_name in user_sub_dict[user_id]:
             if user_name == ctx.author:
                 response = f"{ctx.author.mention} 已訂閱 {anime_name}"
-                await ctx.send(response)
+                await ctx.send(response, components=[Button(label="取消訂閱",
+                                                            style="4",
+                                                            emoji=unsub_emoji,
+                                                            custom_id=f"unsubscribe {episode} {anime_name}")])
 
 
 @bot.command()
@@ -205,4 +208,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.0U9B5dMQf6NJJvqS0LotQ5Im0WQ')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.XK7ydcJWrTAGuFOaWoL7tuTL2cg')
