@@ -11,11 +11,10 @@ from discord.ext import commands, tasks
 from web_spider import Anime
 from handle_follow_info import Handle_follow_info
 
-bot = commands.Bot(command_prefix='$', help_command=None)
+bot = commands.Bot(command_prefix='/', help_command=None)
 DiscordComponents(bot)
 # disord emoji樣式用的跟Twitter一樣
 emoji = '\U0001F493'
-info_dict = {}
 
 
 logger = logging.getLogger('discord')
@@ -32,27 +31,57 @@ logger.addHandler(handler)
 # 當機器人完成啟動時
 async def on_ready():
     print(f'目前登入身份：{bot.user}')
-    game = discord.Game('蘿莉')
+    game = discord.Game('Mumei')
     # discord.Status.<狀態>，可以是online,offline,idle,dnd,invisible
     await bot.change_presence(status=discord.Status.online, activity=game)
-##
     check_update.start()
 
 
-# def cog_unload():
-#     check_update.cancel()
+@bot.event
+async def on_guild_join(guild):
+    await guild.create_text_channel("anime-channel")
+    channel = discord.utils.get(guild.text_channels, name="anime-channel")
 
 
-@tasks.loop(seconds=5.0, count=2)
+@tasks.loop(seconds=10.0)
 async def check_update():
-    channel = bot.get_channel(966204182245806090)
-    await channel.send("hi hi")
-##
+
+    new_anime_dict = Anime().newanime_info()
+    user_follow = Handle_follow_info()
+    user_follow.txt_to_dict()
+    user_follow_dict = user_follow.info_dict
+
+    for user_id in user_follow_dict:
+        for episode, anime_name in user_follow_dict[user_id]:
+            if anime_name in new_anime_dict:
+                if episode not in new_anime_dict[anime_name]:
+                    embed = discord.Embed(
+                        title="動畫名稱", description=anime_name, color=0xff6600)
+                    embed.add_field(
+                        name="最新集數", value=new_anime_dict[anime_name][1], inline=True)
+                    embed.add_field(
+                        name="最新一集更新時間", value=new_anime_dict[anime_name][2], inline=True)
+                    embed.add_field(
+                        name="動畫網址", value=new_anime_dict[anime_name][3], inline=False)
+                    embed.set_thumbnail(url=new_anime_dict[anime_name][4])
+                    embed.set_image(url=new_anime_dict[anime_name][4])
+
+                    idx = user_follow_dict[user_id].index(
+                        [episode, anime_name])
+                    user_follow_dict[user_id][idx][0] = new_anime_dict[anime_name][1]
+                    userr = await bot.fetch_user(user_id)
+                    await userr.send("追隨中的動畫已更新", embed=embed)
+
+            else:
+                user_follow_dict[user_id].remove([episode, anime_name])
+                userr = await bot.fetch_user(user_id)
+                await userr.send(f"{anime_name} 因為已完結或移出動畫瘋的的新番列表, 所以已經自動取消追隨.")
+
+    user_follow.dict_to_txt(user_follow_dict)
 
 
 @bot.command()
 async def new(ctx):
-    global info_dict
     info_dict = Anime().newanime_info()
     if isinstance(info_dict, int):
         await ctx.send("錯誤代碼 : ", info)
@@ -80,18 +109,25 @@ async def new(ctx):
 @bot.event
 async def on_button_click(interaction):
     user_name = interaction.user
+    user_id = interaction.user.id
+    # print(bot.user.name, bot.user.id)
+    # Alone_anime_bot 965889341991825409
+    # print(user_name, user_name.id)
+    # Alone#7831 432431174397198339
     episode = interaction.custom_id.split(" ", 1)[0]
     anime_name = interaction.custom_id.split(" ", 1)[1]
 
     add_follow = Handle_follow_info()
-    if add_follow.isnew_user(user_name):
-        add_follow.add_follow_info_to_txt(user_name, episode, anime_name)
+    if add_follow.isnew_user(user_id):
+        add_follow.info_dict[user_id].append([episode, anime_name])
+        add_follow.dict_to_txt(add_follow.info_dict)
         await interaction.respond(content=f"{user_name}\t已追隨\t{anime_name}", ephemeral=False)
     else:
-        if add_follow.isodd_user_follow(user_name, episode, anime_name):
+        if add_follow.isodd_user_follow(user_id, episode, anime_name):
             await interaction.respond(content=f"{user_name}\t此動漫已在追隨列表中", ephemeral=False)
         else:
-            add_follow.add_follow_info_to_txt(user_name, episode, anime_name)
+            add_follow.info_dict[user_id].append([episode, anime_name])
+            add_follow.dict_to_txt(add_follow.info_dict)
             await interaction.respond(content=f"{user_name}\t已追隨\t{anime_name}", ephemeral=False)
 
 
@@ -127,4 +163,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.IvPogl8YXLhfkn60ZZBo-nahvnM')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.f7olQe8czz1orvxB1_tViKrWksU')
