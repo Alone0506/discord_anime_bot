@@ -208,4 +208,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.XK7ydcJWrTAGuFOaWoL7tuTL2cg')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.VrMNjrq_9A2C6I7mWF96porOEkg')
