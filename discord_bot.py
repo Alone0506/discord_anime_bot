@@ -12,7 +12,7 @@
 
 import discord
 # import logging
-from discord_components import DiscordComponents, ComponentsBot, Button
+from discord_components import DiscordComponents, Button
 from discord.ext import commands, tasks
 
 from web_spider import Anime
@@ -48,7 +48,7 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild):
     await guild.create_text_channel("anime-channel")
-    channel = discord.utils.get(guild.text_channels, name="anime-channel")
+    discord.utils.get(guild.text_channels, name="anime-channel")
 
 
 @tasks.loop(minutes=10)
@@ -211,4 +211,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 # TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.Lt7-JM7HmRj0Hncnb4VPakbnzAA')
+bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.OSTEymic1sOjDSFWsXgEG-jtiZs')
