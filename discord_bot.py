@@ -17,6 +17,7 @@ from discord.ext import commands, tasks
 
 from web_spider import Anime
 from handle_sub_info import Handle_sub_info
+import keep_alive
 
 bot = commands.Bot(command_prefix='$', help_command=None)
 DiscordComponents(bot)
@@ -49,7 +50,7 @@ async def on_guild_join(guild):
     discord.utils.get(guild.text_channels, name="anime-channel")
 
 
-@tasks.loop(minutes=3)
+@tasks.loop(minutes=2)
 async def check_update():
 
     new_anime_dict = Anime().newanime_info()
@@ -124,7 +125,7 @@ async def new(ctx):
     info_dict = Anime().newanime_info()
 
     if isinstance(info_dict, int):
-        await ctx.send("錯誤代碼 : ", info)
+        await ctx.send("錯誤代碼 : ", info_dict)
         return
     else:
         for anime_name, info in info_dict.items():
@@ -218,4 +219,5 @@ async def help(ctx):
     embed.set_thumbnail(url=thumbnail_url)
     await ctx.send(embed=embed)
 
+keep_alive.keep_alive()
 bot.run("TOKEN")
