@@ -12,7 +12,7 @@
 
 import discord
 # import logging
-from discord_components import DiscordComponents, Button
+from discord_components import DiscordComponents, Button, ActionRow
 from discord.ext import commands, tasks
 
 from web_spider import Anime
@@ -23,16 +23,14 @@ DiscordComponents(bot)
 # disord emoji樣式用的跟Twitter一樣
 sub_emoji = '\U0001F493'
 unsub_emoji = '\U0001F494'
+bot_emoji = '\U0001F916'
+bug_emoji = '\U0001FAB2'
+book_emoji = '\U0001F4D6'
 
-
-# logger = logging.getLogger('discord')
-# logger.setLevel(logging.DEBUG)
-# handler = logging.FileHandler(filename='discord.log',
-#                               encoding='utf-8',
-#                               mode='w')
-# handler.setFormatter(logging.Formatter(
-#     '%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-# logger.addHandler(handler)
+invited_bot_url = "https://discord.com/api/oauth2/authorize?client_id=965889341991825409&permissions=2684373072&scope=bot"
+add_friend_url = "https://discordapp.com/users/432431174397198339"
+github_url = "https://github.com/Alone0506/discord_anime_bot.git"
+thumbnail_url = "https://c.tenor.com/l5REW5PZ9ZQAAAAd/nanashi-mumei-hololive.gif"
 
 
 @bot.event
@@ -51,7 +49,7 @@ async def on_guild_join(guild):
     discord.utils.get(guild.text_channels, name="anime-channel")
 
 
-@tasks.loop(minutes=10)
+@tasks.loop(minutes=3)
 async def check_update():
 
     new_anime_dict = Anime().newanime_info()
@@ -124,6 +122,7 @@ async def sublist(ctx):
 @bot.command()
 async def new(ctx):
     info_dict = Anime().newanime_info()
+
     if isinstance(info_dict, int):
         await ctx.send("錯誤代碼 : ", info)
         return
@@ -140,9 +139,10 @@ async def new(ctx):
             if info[1] == "此為OVA或電影":
                 await ctx.send(embed=embed)
             else:
-                await ctx.send(embed=embed,
-                               components=[Button(label="訂閱", style="3", emoji=sub_emoji, custom_id=f"subscribe {info[1]} {anime_name}"),
-                                           Button(label="取消訂閱", style="2", emoji=unsub_emoji, custom_id=f"unsubscribe {info[1]} {anime_name}")])
+                btn = [Button(label="訂閱", style="3", emoji=sub_emoji, custom_id=f"subscribe {info[1]} {anime_name}"), Button(
+                    label="取消訂閱", style="2", emoji=unsub_emoji, custom_id=f"unsubscribe {info[1]} {anime_name}")]
+                row_btn = ActionRow(*btn)
+                await ctx.send(embed=embed, components=[row_btn])
 
             # custom_id 最多100個字元"追 隨" = 3個字元
 
@@ -203,12 +203,19 @@ bot.remove_command('help')
 
 @bot.command()
 async def help(ctx):
+
     embed = discord.Embed(title="指令列表", description="目前的指令如下", color=0xc54343)
     embed.add_field(name="$help", value="列出所有指令", inline=False)
     embed.add_field(name="$new", value="列出已更新的本季新番", inline=False)
     embed.add_field(name="$renew", value="列出這周預訂更新的新番列表", inline=False)
     embed.add_field(name="$sublist", value="列出你目前的訂閱新番", inline=False)
+    embed.add_field(name=f"{bot_emoji}邀請bot到你的伺服器",
+                    value=invited_bot_url, inline=False)
+    embed.add_field(name=f"{bug_emoji}bug 回報",
+                    value=add_friend_url, inline=False)
+    embed.add_field(name=f"{book_emoji}Github Open Source",
+                    value=github_url, inline=False)
+    embed.set_thumbnail(url=thumbnail_url)
     await ctx.send(embed=embed)
 
-# TOKEN 在剛剛 Discord Developer 那邊「BOT」頁面裡面
-bot.run('OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.OSTEymic1sOjDSFWsXgEG-jtiZs')
+bot.run('Your TOKEN')
