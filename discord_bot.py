@@ -218,4 +218,7 @@ async def help(ctx):
     embed.set_thumbnail(url=thumbnail_url)
     await ctx.send(embed=embed)
 
-bot.run('Your TOKEN')
+with open('.gitignore/token.txt') as f:
+    TOKEN = f.readline()
+
+bot.run(TOKEN)
