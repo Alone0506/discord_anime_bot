@@ -215,7 +215,7 @@ async def help(ctx):
                     value=invited_bot_url, inline=False)
     embed.add_field(name=f"{bug_emoji}bug 回報",
                     value=add_friend_url, inline=False)
-    embed.add_field(name=f"{book_emoji}Github Open Source",
+    embed.add_field(name=f"{book_emoji}GitHub Open Source",
                     value=github_url, inline=False)
     embed.set_thumbnail(url=thumbnail_url)
     await ctx.send(embed=embed)
