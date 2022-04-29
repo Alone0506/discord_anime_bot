@@ -1,4 +1,5 @@
 # ############
+# 這裡是主程式
 # discord.__version__ = 1.7.3
 # python.__version__ = 3.10.4 64-bit
 #
