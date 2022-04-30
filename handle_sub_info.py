@@ -32,14 +32,3 @@ class Handle_sub_info():
         if user_id in self.info_dict and [episode, anime_name] in self.info_dict[user_id]:
             return True
         return False
-
-# a = Handle_sub_info()
-# if a.isnew_user('432431174397198339'):
-#     a.info_dict['432431174397198339'].append(["第5集", "bulibuli"])
-#     a.dict_to_txt(a.info_dict)
-# else:
-#     if a.isodd_user_sub('432431174397198339', "第5集", 'bulibuli'):
-#         pass
-#     else:
-#         a.info_dict['432431174397198339'].append(["第5集", "bulibuli"])
-#         a.dict_to_txt(a.info_dict)
