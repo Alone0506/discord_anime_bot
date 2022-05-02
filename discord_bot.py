@@ -21,6 +21,7 @@ from discord.ext import commands, tasks
 from web_spider import Anime
 from handle_sub_info import Handle_sub_info
 import keep_alive
+from random import randint
 
 bot = commands.Bot(command_prefix='$', help_command=None)
 DiscordComponents(bot)
@@ -35,6 +36,8 @@ invited_bot_url = "https://discord.com/api/oauth2/authorize?client_id=9658893419
 add_friend_url = "https://discordapp.com/users/432431174397198339"
 github_url = "https://github.com/Alone0506/discord_anime_bot.git"
 thumbnail_url = "https://c.tenor.com/l5REW5PZ9ZQAAAAd/nanashi-mumei-hololive.gif"
+
+check_time = randint(5, 8)
 
 
 @bot.event
@@ -53,8 +56,9 @@ async def on_guild_join(guild):
     discord.utils.get(guild.text_channels, name="anime-channel")
 
 
-@tasks.loop(minutes=2)
+@tasks.loop(minutes=check_time)
 async def check_update():
+    global check_time
 
     new_anime_dict = Anime().newanime_info()
     user_sub = Handle_sub_info()
@@ -95,6 +99,7 @@ async def check_update():
                     pass
 
     user_sub.dict_to_txt(user_sub_dict)
+    check_time = randint(5, 8)
 
 
 @bot.command()
@@ -119,8 +124,7 @@ async def sublist(ctx):
                                components=[Button(label="取消訂閱",
                                                   style="2",
                                                   emoji=unsub_emoji,
-                                                  custom_id=f"unsubscribe {episode} {anime_name}")],
-                               ephemeral=True)
+                                                  custom_id=f"unsubscribe {episode} {anime_name}")])
 
 
 @bot.command()
@@ -223,4 +227,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 keep_alive.keep_alive()
-bot.run("TOKEN")
+bot.run("OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.xh_iSrOitPb2Tti8UxkSbCJdKdY")
