@@ -189,6 +189,7 @@ async def on_button_click(interaction):
 @bot.command()
 async def renew(ctx):
     anime_info = Anime().renew()
+    print(anime_info)
     for day, infos in anime_info.items():
 
         if len(infos[0]) == 2:
@@ -227,4 +228,4 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 keep_alive.keep_alive()
-bot.run(TOKEN)
+bot.run("OTY1ODg5MzQxOTkxODI1NDA5.Yl5wjA.xh8N4oiSPCQDAZ0bxQJUd3sDXn4")
